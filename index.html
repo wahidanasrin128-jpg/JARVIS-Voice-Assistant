@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030611">
+<title>JARVIS</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#030611;color:#eaf8ff;font-family:system-ui;text-align:center;min-height:100vh}
+header{height:70px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #43d9ff44}
+.logo{width:44px;height:44px;border:1px solid #43d9ff;border-radius:50%;display:grid;place-items:center;color:#43d9ff;font-weight:900;font-size:22px}
+h1{font-size:20px;letter-spacing:5px;margin:0}small{color:#8199aa;letter-spacing:2px}
+main{padding:18px}.core{width:190px;height:190px;border-radius:50%;margin:30px auto 20px;border:2px solid #43d9ff;background:radial-gradient(circle,#15506a,#06111d 65%);color:#fff;font-size:50px;font-weight:900;box-shadow:0 0 35px #43d9ff66;display:grid;place-items:center;cursor:pointer}.core.listen{box-shadow:0 0 65px #43d9ff}.status{color:#43d9ff;letter-spacing:3px;font-weight:800}.sub{color:#8199aa;font-size:13px}.chat{max-width:700px;margin:20px auto;border:1px solid #43d9ff44;border-radius:16px;overflow:hidden;text-align:left}.messages{height:260px;overflow:auto;padding:12px}.m{display:flex;gap:8px;margin:9px 0}.m b{color:#43d9ff;font-size:10px}.m div{background:#071326;border:1px solid #43d9ff33;border-radius:12px;padding:8px 10px}.m p{margin:4px 0;white-space:pre-wrap}form{display:flex;padding:9px;gap:8px;border-top:1px solid #43d9ff33}input{flex:1;background:#020914;border:1px solid #43d9ff44;color:white;padding:12px;border-radius:9px}button{background:#08182a;color:white;border:1px solid #43d9ff44;border-radius:9px;padding:11px;cursor:pointer}form button{background:#43d9ff;color:#001018;font-weight:900}footer{position:fixed;bottom:0;left:0;right:0;padding:8px;background:#020711;color:#8199aa;font-size:10px}
+</style>
+</head>
+<body>
+<header><div class="logo">J</div><div><h1>JARVIS</h1><small>ANDROID VOICE ASSISTANT</small></div></header>
+<main>
+<div id="core" class="core">J</div>
+<div id="status" class="status">SYSTEM READY</div>
+<div id="sub" class="sub">Tap the core and speak</div>
+<div class="chat"><div id="messages" class="messages"><div class="m"><div><b>JARVIS</b><p>Hello. I am JARVIS. How can I help you?</p></div></div></div>
+<form id="form"><input id="input" placeholder="Type a command…"><button>➤</button></form></div>
+<button onclick="cmd('What time is it?')">🕒 Time</button>
+<button onclick="cmd('Turn on flashlight')">🔦 Flashlight</button>
+<button onclick="cmd('Open camera')">📷 Camera</button>
+<button onclick="cmd('Volume up')">🔊 Volume +</button>
+<button onclick="cmd('Volume down')">🔉 Volume −</button>
+</main>
+<footer>Made by Arifin Wahid</footer>
+<script>
+const $=id=>document.getElementById(id);
+const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+function add(t,u=false){let d=document.createElement("div");d.className="m";d.innerHTML="<div><b>"+(u?"YOU":"JARVIS")+"</b><p></p></div>";d.querySelector("p").textContent=t;$("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight}
+function speak(t){if(!speechSynthesis)return;let x=new SpeechSynthesisUtterance(t);x.lang="en-US";speechSynthesis.speak(x)}
+function say(t){add(t);speak(t)}
+async function native(c,v=null){try{return JSON.parse(JARVIS_NATIVE.execute(c,v===null?null:String(v)))}catch(e){return{ok:false}}}
+async function cmd(t){add(t,true);let q=t.toLowerCase();
+if(q.includes("time"))return say("The time is "+new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}));
+if(q.includes("flashlight")||q.includes("torch")){let r=await native("flashlight",!q.includes("off"));return say(r.ok?(q.includes("off")?"Flashlight off.":"Flashlight on."):"I could not control the flashlight.");}
+if(q.includes("camera")){let r=await native("camera");return say(r.ok?"Opening camera.":"Camera could not be opened.");}
+if(q.includes("volume up")){await native("volume_up");return say("Volume increased.");}
+if(q.includes("volume down")){await native("volume_down");return say("Volume decreased.");}
+if(q.includes("settings")){await native("open_settings");return say("Opening Android settings.");}
+if(q.includes("youtube")){await native("open_url","https://www.youtube.com/");return say("Opening YouTube.");}
+if(q.includes("google")){await native("open_url","https://www.google.com/");return say("Opening Google.");}
+say("I heard: "+t)}
+function listen(){if(!R)return say("Speech recognition is not supported. Type your command.");let r=new R();r.lang="en-US";r.onstart=()=>{$("core").classList.add("listen");$("status").textContent="LISTENING…"};r.onresult=e=>{let t=e.results[0][0].transcript;cmd(t)};r.onend=()=>{$("core").classList.remove("listen");$("status").textContent="SYSTEM READY"};r.start()}
+$("core").onclick=listen;$("form").onsubmit=e=>{e.preventDefault();cmd($("input").value);$("input").value=""};
+</script>
+</body>
+</html>
